@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: postgres-python-pod
+  labels:
+    name: postgres-pod-python
+    app:  python-app
+spec:
+  containers:
+    - name: postgres-python
+      image: postgres
+      ports:
+         - containerPort: 5432
+      env:
+         - name: POSTGRES_USER
+           value: "kenne"
+         - name: POSTGRES_PASSWORD
+           value: "Kenne1989"
+         - name: POSTGRES_DB
+           value: "mydatabase"
