@@ -3,6 +3,7 @@ from parameterized import parameterized
 from PysparkUniTestBase import *
 from data_transforme.transform_data import TransformData
 from pyspark import Row
+from pyspark.sql.functions import transform
 
 
 class PysparkUniTest(PysparkUniTestBase):
@@ -46,6 +47,7 @@ class PysparkUniTest(PysparkUniTestBase):
         """then"""
         self.assertTrue(new_df.columns[0]!="name","rename column_name fail")
 
+
     @parameterized.expand([
         # Cas de test (données d'entrée, colonne cible, résultat attendu)
         ("name", "firstName"),
@@ -60,7 +62,26 @@ class PysparkUniTest(PysparkUniTestBase):
         """then"""
         self.assertNotIn(item , new_df.columns, "rename column_name fail")
 
+
+
+
+    def test_join_correctly_table(self):
+        """when"""
+        table_one = self.createDataFrame()
+        table_two = self.createDataFrame2()
+
+        """given"""
+        new_df = TransformData.join_partition_col(table_one,table_two)
+
+        """then"""
+        self.assertTrue(len(new_df.columns) == len(table_one.columns) + len(table_two.columns),"error during join tables")
+
     def createDataFrame(self):
         data = [Row(name="Alice", age="25",tpdistance=4.455), Row(name="Bob", age=30,tpdistance=3.44)]
+        df = self.spark.createDataFrame(data)
+        return df
+
+    def createDataFrame2(self):
+        data = [Row(state="newYork",population=1000000 ), Row(name="Atlanta", population=2000000)]
         df = self.spark.createDataFrame(data)
         return df
