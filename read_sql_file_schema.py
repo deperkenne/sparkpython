@@ -31,7 +31,7 @@ try:
         cursor = connection.cursor()
 
         # Exécution du fichier schema.sql pour créer les tables
-        execute_sql_file(yellow_taxi_schema, cursor)
+        execute_sql_file(yellow_taxi_schema_partition, cursor)
         connection.commit()  # Valider les changements pour la création des tables
         print("Les tables ont été créées avec succès.")
         connection.commit()  # Valider les changements pour l'insertion des données

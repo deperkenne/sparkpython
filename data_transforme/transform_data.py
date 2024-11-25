@@ -9,6 +9,7 @@ from validation import DataFrameNotFoundException, ColumnNotExistException
 
 
 class TransformData:
+
     @staticmethod
     def transform_float_to_integer(df: DataFrame,columnName:str) -> DataFrame:
         """
@@ -26,6 +27,12 @@ class TransformData:
         if  columnName not in  df.columns:
             raise validation.ColumnNotExistException("this columnName not exist")
         return df.withColumn(columnName, col(columnName).cast("int"))
+
+    @staticmethod
+    def transform_long_to_integer(df:DataFrame,columnName:str):
+        if columnName not in df.columns:
+            raise validation.ColumnNotExistException("this columnName not exist")
+        return df.withColumn(columnName, col(columnName).cast("integer"))
 
     @staticmethod
     def drop_multiple_columns(df: DataFrame, *args: str) -> DataFrame:

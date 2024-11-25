@@ -3,7 +3,7 @@ from parameterized import parameterized
 from PysparkUniTestBase import *
 from data_transforme.transform_data import TransformData
 from pyspark import Row
-from pyspark.sql.functions import transform
+from pyspark.sql.functions import transform, col
 
 
 class PysparkUniTest(PysparkUniTestBase):
@@ -63,8 +63,6 @@ class PysparkUniTest(PysparkUniTestBase):
         self.assertNotIn(item , new_df.columns, "rename column_name fail")
 
 
-
-
     def test_join_correctly_table(self):
         """when"""
         table_one = self.createDataFrame()
@@ -76,12 +74,34 @@ class PysparkUniTest(PysparkUniTestBase):
         """then"""
         self.assertTrue(len(new_df.columns) == len(table_one.columns) + len(table_two.columns),"error during join tables")
 
+    @parameterized.expand([
+        # Cas de test (données d'entrée, colonne cible, résultat attendu)
+        (1000000, "population", 300000, 300000),
+        (2000000, "population", 500000, 500000),
+    ])
+    def test_update_correctly_df(self, column_name, value, set_value, expected_value):
+        # when
+        df = self.createDataFrame2()
+
+        # given
+        new_df = TransformData.update_one_column(df, column_name, value, set_value)
+        result_df = new_df.filter(new_df[column_name] == expected_value)
+
+
+        # then
+        self.assertTrue(result_df.count() > 0, "Test failed: No rows match the expected value")
+
+
+
+
     def createDataFrame(self):
         data = [Row(name="Alice", age="25",tpdistance=4.455), Row(name="Bob", age=30,tpdistance=3.44)]
         df = self.spark.createDataFrame(data)
         return df
 
     def createDataFrame2(self):
-        data = [Row(state="newYork",population=1000000 ), Row(name="Atlanta", population=2000000)]
+        data = [Row(state="newYork",population=1000000 ), Row(state="Atlanta", population=2000000)]
         df = self.spark.createDataFrame(data)
         return df
+
+

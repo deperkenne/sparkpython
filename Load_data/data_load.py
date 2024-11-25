@@ -13,8 +13,6 @@ spark = (
 
 )
 
-#df.write \
- #   .jdbc(url=jdbc_url, table="yellow_taxi_partition_2", mode="append", properties=db_properties)
 
 def load_to_csv_file(df,filpath):
     df.write.csv(filpath, header=True)
