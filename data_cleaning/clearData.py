@@ -91,7 +91,7 @@ class DataClear:
         df = df.dropDuplicates()
         return df
 
-
+    #
     # Function to remove rows with invalid payment types
     @staticmethod
     def filter_valid_payment_and_record_types(df: DataFrame,**kwargs) -> DataFrame:
