@@ -1,4 +1,5 @@
 import string
+from datetime import datetime
 from time import strftime
 from pyspark.sql import DataFrame
 
@@ -47,7 +48,7 @@ class TransformData:
             ValueError: Si une colonne n'est pas une chaîne.
         """
         if not all(isinstance(item, str) for item in args):
-            raise validation.ColumnNotExistException("Toutes les colonnes doivent être des chaînes de caractères.")
+            raise validation.ColumnNotExistException("this column not exist.")
         for item in args:
             df = df.drop(item)
         return df
@@ -105,70 +106,30 @@ class TransformData:
         """
         return df.withColumn(new_column_name, col(old_colName) * 1000)
 
-    @staticmethod
-    def add_time_for_distance(new_col_name,df:DataFrame):
-        return  df.withColumn("trip_duration_minutes",
-                           (unix_timestamp("tpep_dropoff_datetime") - unix_timestamp("tpep_pickup_datetime")) / 60)
 
     @staticmethod
-    def select_first_partition_col(df:DataFrame):
+    def select_column(df:DataFrame,*args):
         """
             Sélectionne un ensemble prédéfini de colonnes pour la première partition.
             Args:
                 df (DataFrame): Le DataFrame Spark à modifier.
             Returns:
                 DataFrame: Le DataFrame contenant uniquement les colonnes sélectionnées.
+
             """
-        return df.select(
-               "VendorId",
-               col("passenger_count").cast(IntegerType()),
-               col("trip_distance").alias("tripdistance"),
-               df.tpep_pickup_datetime,
-               df.tpep_dropoff_datetime,
-               df.state,
-               df.PULocationID,
-               df.DOLocationID,
-               df.payment_type
 
-        )
 
-    @staticmethod
-    def select_second_partition_col(df:DataFrame):
-        """
-            Sélectionne un ensemble prédéfini de colonnes pour la première partition.
-            Args:
-                df (DataFrame): Le DataFrame Spark à modifier.
-            Returns:
-                DataFrame: Le DataFrame contenant uniquement les colonnes sélectionnées.
-            """
-        return df.select(
-               "fare_amount",
-               col("mta_tax"),
-               col("tip_amount"),
-               df.tolls_amount,
-               df.total_amount,
-               df.congestion_surcharge ,
-               df.airport_fee,
-               col("trip_distance_in_meter")
-        )
 
-    @staticmethod
-    def join_partition_col(df1: DataFrame, df2: DataFrame) -> DataFrame:
-        """
-        Joint deux DataFrames Spark.
-        Args:
-            df1 (DataFrame): Le premier DataFrame.
-            df2 (DataFrame): Le second DataFrame.
-        Returns:
-            DataFrame: Le DataFrame résultant après la jointure.
-        """
-        return df1.join(df2)
 
-    @staticmethod
-    def select_multiple_col(df, dict_of_key_eq_old_col_value_eq_new_col):
-        for key,val in dict_of_key_eq_old_col_value_eq_new_col.items():
-            df.withColumnName(key,val)
-        return df
+        # Boucle pour générer dynamiquement la sélection
+        selected_columns = [df[col] for col in args]
+
+        # Utiliser select() avec la liste des colonnes
+        df_selected = df.select(*selected_columns)
+
+
+        return df_selected
+
 
     @staticmethod
     def rename_multiple_columns(df: DataFrame, **kwargs) -> DataFrame:
@@ -189,3 +150,20 @@ class TransformData:
         return df
 
 
+    @staticmethod
+    def add_time_in_minutes(df: DataFrame, new_column_name: str, start_date: str, end_date: str) -> DataFrame:
+        """
+        Adds a new column to the DataFrame that represents the difference in minutes between two datetime columns.
+
+        :param df: The input Spark DataFrame.
+        :param new_column_name: The name of the new column to be added.
+        :param start_date: The name of the column containing the start date.
+        :param end_date: The name of the column containing the end date.
+        :return: A new DataFrame with the additional column.
+        """
+        # Calculate the difference in seconds and convert to minutes
+        df = df.withColumn(
+            new_column_name,
+            (unix_timestamp(col(end_date)) - unix_timestamp(col(start_date))) / 60
+        )
+        return df

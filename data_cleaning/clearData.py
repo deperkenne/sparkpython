@@ -1,4 +1,6 @@
-from pyspark.pandas import DataFrame
+from datetime import date, datetime
+
+from pyspark.sql import DataFrame
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col
 import os
@@ -7,7 +9,7 @@ class DataClear:
 
     # Function to remove rows where `passenger_count` is null or zero
     @staticmethod
-    def filter_nonzero_passenger_count(df: DataFrame,column_name) -> DataFrame:
+    def filter_nonzero_passenger_count(df:DataFrame,column_name:str) -> DataFrame:
         """
         Removes rows where 'passenger_count' is zero or null.
 
@@ -59,7 +61,7 @@ class DataClear:
 
     # Function to fill null values with default values provided in a dictionary
     @staticmethod
-    def fill_nulls_with_default(df: DataFrame, default_values: dict) -> DataFrame:
+    def fill_nulls_with_default(df:DataFrame, default_values:dict) -> DataFrame:
         """
         Fills null values in the DataFrame using the specified default values.
 
@@ -116,34 +118,37 @@ class DataClear:
 
     # Function to remove rows with invalid vendorID
     @staticmethod
-    def filter_valid_correct_vendor_id(df:DataFrame):
+    def filter_valid_correct_vendor_id(df:DataFrame)  -> DataFrame:
         return  df.filter((col("VendorID") >=1) & (col("VendorID") <= 2))
 
 
     @staticmethod
-    def filter_valid_dates(df: DataFrame, column_start_date: str, test_start_date: str, test_end_date: str,
-                           column_end_date: str) -> DataFrame:
-        """
-        Filters rows based on the given date range conditions:
-        - The start date (`column_start_date`) must fall within the range of `test_start_date` and `test_end_date`.
-        - The end date (`column_end_date`) must also fall within the same range.
-
-        Parameters:
-            df (DataFrame): Input Spark DataFrame.
-            column_start_date (str): Name of the column representing the start date.
-            test_start_date (str): Start of the test date range (in 'YYYY-MM-DD' format).
-            test_end_date (str): End of the test date range (in 'YYYY-MM-DD' format).
-            column_end_date (str): Name of the column representing the end date.
-
-        Returns:
-            DataFrame: Filtered DataFrame.
+    def filter_correct_date(df:DataFrame, date_column:str, first_date,second_date) -> DataFrame:
         """
 
-        df = df.filter(
-                 (col(column_start_date) >= test_start_date) &
-                (col(column_start_date) <= test_end_date) &
-                (col(column_end_date) >= test_start_date) &
-                (col(column_end_date) <= test_end_date))
+        :param first_date: parameter who filter will be applied
+        :param second_date: parameter who filter will be applied
 
-        return df
+        :param df: dataframe that contain column and row who the filter will be applied
+        :param date_column: column in dataframe who the filter is applied
+        :return: new filter dataframe
+        """
+
+
+        return  df.filter((col(date_column)>=first_date)&((col(date_column)<=second_date)))
+
+
+    @staticmethod
+    def filter_values_in_range(df, column_name, min_value=1, max_value=6):
+        """
+        Filters rows in the DataFrame where the values in the specified column are within the range [min_value, max_value].
+
+        :param df: Spark DataFrame to filter
+        :param column_name: Name of the column to check
+        :param min_value: Minimum value of the range (inclusive)
+        :param max_value: Maximum value of the range (inclusive)
+        :return: Filtered DataFrame
+        """
+        return df.filter((col(column_name) >= min_value) & (col(column_name) <= max_value))
+
 
